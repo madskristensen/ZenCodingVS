@@ -26,34 +26,17 @@ To invoke ZenCoding, write the syntax and hit the `TAB` key to generate the mark
 
 #### Examples:
 
-Syntax `ul>li*3` generates:
+Syntax __ul>li*3__ generates:
 
-```html
-<ul>
-    <li></li>
-    <li></li>
-    <li></li>
-</ul>
-```
+![Example1](art/example1.png)
 
-Syntax `#foo>span` generates:
+Syntax __#foo>span__ generates:
 
-```html
-<div id="foo">
-    <span></span>
-</div>
-```
+![Example2](art/example2.png)
 
-Syntax `ul>li*4>a{test $}` generates:
+Syntax __ul>li*4>a{test $}__ generates:
 
-```html
-<ul>
-    <li><a href="">test 1</a></li>
-    <li><a href="">test 2</a></li>
-    <li><a href="">test 3</a></li>
-    <li><a href="">test 4</a></li>
-</ul>
-```
+![Example3](art/example3.png)
 
 ### Lorem Ipsum generator
 As part of ZenCoding, you can now generate Lorem Ipsum code directly in the HTML editor. Simply type `lorem` and hit `TAB` and a 30 word Lorem Ipsum text is inserted. 
@@ -64,16 +47,12 @@ This can be used in conjuction with ZenCoding like so: `ul>li*5>lorem3`
 ### Lorem Pixel generator
 As part of ZenCoding, you can also generate Lorem Pixel code directly in the HTML editor. Simply type `pix-200x200-animals` and hit `TAB` and a img tag with a 200x200 image of an animal is inserted:
 
-```html
-<img src="http://lorempixel.com/200/200/animals/0/" alt="" />
-```
+![Example4](art/example4.png)
 
 ### PlaceHold.it generator
 ZenCoding also support [PlaceHold.it](http://placehold.it/) if you prefer blank images. Type `place-50` and hit `TAB` to have a 50 pixels square image. Use `place-200x100` to insert a rectangular image:
 
-```html
-<img src="http://placehold.it/200x150/" alt="" />
-```
+![Example5](art/example5.png)
 
 You can choose the background color by adding the hexadecimal value after the size like this `place-150x240-EEEDDD`. You can even add text to the image by using `place-150x240-EEE-t=This%20is%20some%20text`.
 
