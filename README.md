@@ -26,11 +26,11 @@ To invoke ZenCoding, write the syntax and hit the `TAB` key to generate the mark
 
 #### Examples:
 
-Syntax __ul>li*3__ generates:
+Syntax __ul&gt;li*3__ generates:
 
 ![Example1](art/example1.png)
 
-Syntax __#foo>span__ generates:
+Syntax __#foo&gt;span__ generates:
 
 ![Example2](art/example2.png)
 
