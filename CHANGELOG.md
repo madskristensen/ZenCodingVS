@@ -1,7 +1,6 @@
 # Road map
 
 - [ ] Work on non-empty lines
-- [ ] Update readme with screenshots and tutorial
 
 Features that have a checkmark are complete and available for
 download in the

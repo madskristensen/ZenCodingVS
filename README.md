@@ -14,18 +14,56 @@ See the [change log](CHANGELOG.md) for changes and road map.
 
 ## Features
 
-- Feature 1
-- Feature 2
-  - Sub feature
+- HTML ZenCoding
+- Lorem Ipsum generator
+- PlaceHold.it image generator
 
-### Feature 1
-Describe feature 1. Add screenshots/code samples etc.
+### HTML ZenCoding
+ZenCoding is a quick way to generate HTML markup by using a CSS based syntax.
 
-### Feature 2
-Describe feature 2. Add screenshots/code samples etc.
+To invoke ZenCoding, write the syntax and hit the `TAB` key to generate the markup.
 
-#### Sub feature
-Describe sub feature. Add screenshots/code samples etc.
+#### Examples:
+
+Syntax `ul>li*3` generates:
+
+```html
+<ul>
+    <li></li>
+    <li></li>
+    <li></li>
+</ul>
+```
+
+Syntax `#foo>span` generates:
+
+```html
+<div id="foo">
+    <span></span>
+</div>
+```
+
+Syntax `ul>li*4>a{test $}` generates:
+
+```html
+<ul>
+    <li><a href="">test 1</a></li>
+    <li><a href="">test 2</a></li>
+    <li><a href="">test 3</a></li>
+    <li><a href="">test 4</a></li>
+</ul>
+```
+
+### Lorem Ipsum generator
+As part of ZenCoding, you can now generate Lorem Ipsum code directly in the HTML editor. Simply type `lorem` and hit `TAB` and a 30 word Lorem Ipsum text is inserted. 
+
+Type `lorem10` and a 10 word Lorem Ipsum text is inserted. 
+This can be used in conjuction with ZenCoding like so: `ul>li*5>lorem3`
+
+### PlaceHold.it generator
+ZenCoding also support [PlaceHold.it](http://placehold.it/) if you prefer blank images. Type `place-50` and hit `TAB` to have a 50 pixels square image. Use `place-200x100` to insert a rectangular image. 
+
+You can choose the background color by adding the hexadecimal value after the size like this `place-150x240-EEEDDD`. You can even add text to the image by using `place-150x240-EEE-t=This%20is%20some%20text`.
 
 ## Contribute
 Check out the [contribution guidelines](.github/CONTRIBUTING.md)
