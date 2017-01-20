@@ -3,10 +3,13 @@
   <Metadata>
     <Identity Id="9514d70e-a7b1-4876-847d-b0d2ad0962bf" Version="0.1" Language="en-US" Publisher="Mads Kristensen" />
     <DisplayName>ZenCoding</DisplayName>
-    <Description xml:space="preserve">Provides ZenCoding for the HTML Editor</Description>
+    <Description xml:space="preserve">Provides ZenCoding for the HTML Editor - full support for static HTML, Razor and WebForms.</Description>
+    <MoreInfo>https://github.com/madskristensen/ZenCodingVS</MoreInfo>
+    <License>Resources\LICENSE</License>
+    <ReleaseNotes>https://github.com/madskristensen/ZenCodingVS/blob/master/CHANGELOG.md</ReleaseNotes>
     <Icon>Resources\Icon.png</Icon>
     <PreviewImage>Resources\Icon.png</PreviewImage>
-    <Tags>emmet, zen, html</Tags>
+    <Tags>emmet, zencoding, html</Tags>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0]" />

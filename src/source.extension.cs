@@ -9,10 +9,10 @@ namespace ZenCodingVS
     {
         public const string Id = "9514d70e-a7b1-4876-847d-b0d2ad0962bf";
         public const string Name = "ZenCoding";
-        public const string Description = @"Provides ZenCoding for the HTML Editor";
+        public const string Description = @"Provides ZenCoding for the HTML Editor - full support for static HTML, Razor and WebForms.";
         public const string Language = "en-US";
         public const string Version = "0.1";
         public const string Author = "Mads Kristensen";
-        public const string Tags = "emmet, zen, html";
+        public const string Tags = "emmet, zencoding, html";
     }
 }

@@ -8,7 +8,7 @@ or get the [CI build](http://vsixgallery.com/extension/9514d70e-a7b1-4876-847d-b
 
 ---------------------------------------
 
-Provides ZenCoding for the HTML Editor
+Provides ZenCoding for the HTML Editor - full support for static HTML, Razor and WebForms.
 
 See the [change log](CHANGELOG.md) for changes and road map.
 
