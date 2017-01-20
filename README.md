@@ -34,7 +34,7 @@ Syntax __#foo>span__ generates:
 
 ![Example2](art/example2.png)
 
-Syntax __ul>li*4>a{test $}__ generates:
+Syntax __ul&gt;li*4&gt;a{test $}__ generates:
 
 ![Example3](art/example3.png)
 
