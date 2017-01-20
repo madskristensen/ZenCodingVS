@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="9514d70e-a7b1-4876-847d-b0d2ad0962bf" Version="0.1" Language="en-US" Publisher="Mads Kristensen" />
+    <Identity Id="9514d70e-a7b1-4876-847d-b0d2ad0962bf" Version="1.0" Language="en-US" Publisher="Mads Kristensen" />
     <DisplayName>ZenCoding</DisplayName>
     <Description xml:space="preserve">Provides ZenCoding for the HTML Editor - full support for static HTML, Razor and WebForms.</Description>
     <MoreInfo>https://github.com/madskristensen/ZenCodingVS</MoreInfo>
