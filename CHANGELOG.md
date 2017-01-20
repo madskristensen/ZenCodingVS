@@ -15,4 +15,5 @@ on the official Visual Studio extension gallery.
 
 - [x] ZenCoding generator
 - [x] Lorem Ipsum generator
+- [x] Lorem Pixel image generator
 - [x] PlaceHold.it image generator

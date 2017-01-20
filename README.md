@@ -16,6 +16,7 @@ See the [change log](CHANGELOG.md) for changes and road map.
 
 - HTML ZenCoding
 - Lorem Ipsum generator
+- Lorem Pixel image generator
 - PlaceHold.it image generator
 
 ### HTML ZenCoding
@@ -59,6 +60,13 @@ As part of ZenCoding, you can now generate Lorem Ipsum code directly in the HTML
 
 Type `lorem10` and a 10 word Lorem Ipsum text is inserted. 
 This can be used in conjuction with ZenCoding like so: `ul>li*5>lorem3`
+
+### Lorem Pixel generator
+As part of ZenCoding, you can also generate Lorem Pixel code directly in the HTML editor. Simply type `pix-200x200-animals` and hit `TAB` and a img tag with a 200x200 image of an animal is inserted:
+
+```html
+<img src="http://lorempixel.com/200/200/animals/0/" alt="" />
+```
 
 ### PlaceHold.it generator
 ZenCoding also support [PlaceHold.it](http://placehold.it/) if you prefer blank images. Type `place-50` and hit `TAB` to have a 50 pixels square image. Use `place-200x100` to insert a rectangular image:
