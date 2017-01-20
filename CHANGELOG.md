@@ -13,4 +13,6 @@ on the official Visual Studio extension gallery.
 
 ## 1.0
 
-- [x] Initial release
+- [x] ZenCoding generator
+- [x] Lorem Ipsum generator
+- [x] PlaceHold.it image generator

@@ -61,7 +61,11 @@ Type `lorem10` and a 10 word Lorem Ipsum text is inserted.
 This can be used in conjuction with ZenCoding like so: `ul>li*5>lorem3`
 
 ### PlaceHold.it generator
-ZenCoding also support [PlaceHold.it](http://placehold.it/) if you prefer blank images. Type `place-50` and hit `TAB` to have a 50 pixels square image. Use `place-200x100` to insert a rectangular image. 
+ZenCoding also support [PlaceHold.it](http://placehold.it/) if you prefer blank images. Type `place-50` and hit `TAB` to have a 50 pixels square image. Use `place-200x100` to insert a rectangular image:
+
+```html
+<img src="http://placehold.it/200x150/" alt="" />
+```
 
 You can choose the background color by adding the hexadecimal value after the size like this `place-150x240-EEEDDD`. You can even add text to the image by using `place-150x240-EEE-t=This%20is%20some%20text`.
 
