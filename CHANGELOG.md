@@ -1,6 +1,6 @@
 # Road map
 
-- [ ] Work on non-empty lines
+- [x] Work on non-empty lines
 
 Features that have a checkmark are complete and available for
 download in the

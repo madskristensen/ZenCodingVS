@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Projection;
@@ -23,12 +24,14 @@ namespace ZenCodingVS
         private ICompletionBroker _broker;
         private IWpfTextView _view;
         private ITextBufferUndoManager _undoManager;
+        private IClassifier _classifier;
 
-        public ExpandCommand(IWpfTextView view, ICompletionBroker broker, ITextBufferUndoManagerProvider undoProvider)
+        public ExpandCommand(IWpfTextView view, ICompletionBroker broker, ITextBufferUndoManagerProvider undoProvider, IClassifier classifier)
         {
             _view = view;
             _broker = broker;
             _undoManager = undoProvider.GetTextBufferUndoManager(view.TextBuffer);
+            _classifier = classifier;
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -191,23 +194,20 @@ namespace ZenCodingVS
         {
             int position = _view.Caret.Position.BufferPosition.Position;
 
-            if (position >= 0)
-            {
-                var line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
-                string text = line.GetText().TrimEnd();
+            if (position == 0)
+                return new Span();
 
-                if (string.IsNullOrWhiteSpace(text) || text.Length < position - line.Start || text.Length + line.Start > position)
-                    return new Span();
+            var line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
+            var spans = _classifier.GetClassificationSpans(line.Extent);
 
-                string result = text.Substring(0, position - line.Start).TrimStart();
+            if (!spans.Any())
+                return Span.FromBounds(line.Start, position);
 
-                if (result.Length > 0 && !text.Contains("<") && !char.IsWhiteSpace(result.Last()))
-                {
-                    return new Span(line.Start.Position + text.IndexOf(result, StringComparison.OrdinalIgnoreCase), result.Length);
-                }
-            }
+            var start = spans.LastOrDefault()?.Span.End ?? line.Start;
+            var text = line.Snapshot.GetText(start, position - start);
+            var offset = text.Length - text.TrimStart().Length;
 
-            return new Span();
+            return Span.FromBounds(start + offset, position);
         }
 
         public override int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
