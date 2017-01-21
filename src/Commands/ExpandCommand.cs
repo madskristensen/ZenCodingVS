@@ -50,15 +50,13 @@ namespace ZenCodingVS
 
         private bool InvokeZenCoding(DTE dte)
         {
-            Span zenSpan = GetText();
+            Span zenSpan = GetSyntaxSpan(out string syntax);
 
-            if (zenSpan.Length == 0 || _view.Selection.SelectedSpans[0].Length > 0 || !IsValidTextBuffer())
+            if (zenSpan.IsEmpty || _view.Selection.SelectedSpans[0].Length > 0 || !IsValidTextBuffer())
                 return false;
 
-            string zenSyntax = _view.TextBuffer.CurrentSnapshot.GetText(zenSpan);
-
             var parser = new Parser();
-            string result = parser.Parse(zenSyntax, ZenType.HTML);
+            string result = parser.Parse(syntax, ZenType.HTML);
 
             if (!string.IsNullOrEmpty(result))
             {
@@ -190,22 +188,20 @@ namespace ZenCodingVS
             return _view.Selection;
         }
 
-        private Span GetText()
+        private Span GetSyntaxSpan(out string text)
         {
             int position = _view.Caret.Position.BufferPosition.Position;
+            text = string.Empty;
 
             if (position == 0)
                 return new Span();
 
             var line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
-            var spans = _classifier.GetClassificationSpans(line.Extent);
+            var last = _classifier.GetClassificationSpans(line.Extent).LastOrDefault();
+            var start = last?.Span.End ?? line.Start;
 
-            if (!spans.Any())
-                return Span.FromBounds(line.Start, position);
-
-            var start = spans.LastOrDefault()?.Span.End ?? line.Start;
-            var text = line.Snapshot.GetText(start, position - start);
-            var offset = text.Length - text.TrimStart().Length;
+            text = line.Snapshot.GetText(start, position - start).Trim();
+            var offset = position - line.Start - text.Length;
 
             return Span.FromBounds(start + offset, position);
         }
