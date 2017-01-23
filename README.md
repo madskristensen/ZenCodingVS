@@ -42,7 +42,7 @@ Syntax __ul>li\*4>a{test $}__ generates:
 As part of ZenCoding, you can now generate Lorem Ipsum code directly in the HTML editor. Simply type `lorem` and hit `TAB` and a 30 word Lorem Ipsum text is inserted. 
 
 Type `lorem10` and a 10 word Lorem Ipsum text is inserted. 
-This can be used in conjuction with ZenCoding like so: `ul>li\*5>lorem3`
+This can be used in conjuction with ZenCoding like so: `ul>li*5>lorem3`
 
 ### Lorem Pixel generator
 As part of ZenCoding, you can also generate Lorem Pixel code directly in the HTML editor. Simply type `pix-200x200-animals` and hit `TAB` and a img tag with a 200x200 image of an animal is inserted:
