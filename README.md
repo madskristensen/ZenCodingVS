@@ -2,8 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/p6lyd0fetoa1amgy?svg=true)](https://ci.appveyor.com/project/madskristensen/zencodingvs)
 
-<!-- Update the VS Gallery link after you upload the VSIX-->
-Download this extension from the [VS Gallery](https://visualstudiogallery.msdn.microsoft.com/[GuidFromGallery])
+Download this extension from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.ZenCoding)
 or get the [CI build](http://vsixgallery.com/extension/9514d70e-a7b1-4876-847d-b0d2ad0962bf/).
 
 ---------------------------------------
