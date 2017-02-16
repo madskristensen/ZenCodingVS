@@ -11,7 +11,7 @@ namespace ZenCodingVS
         public const string Name = "ZenCoding";
         public const string Description = @"Provides ZenCoding for the HTML Editor - full support for static HTML, Razor and WebForms.";
         public const string Language = "en-US";
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         public const string Author = "Mads Kristensen";
         public const string Tags = "emmet, zencoding, html";
     }

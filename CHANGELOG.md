@@ -11,6 +11,10 @@ download in the
 These are the changes to each version that has been released
 on the official Visual Studio extension gallery.
 
+## 1.2
+
+- [x] Fixed indentation issue (#1)
+
 ## 1.1
 
 - [x] Work on non-empty lines

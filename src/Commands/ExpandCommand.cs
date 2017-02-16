@@ -25,6 +25,7 @@ namespace ZenCodingVS
         private IWpfTextView _view;
         private ITextBufferUndoManager _undoManager;
         private IClassifier _classifier;
+        private static Span _emptySpan = new Span();
 
         public ExpandCommand(IWpfTextView view, ICompletionBroker broker, ITextBufferUndoManagerProvider undoProvider, IClassifier classifier)
         {
@@ -174,7 +175,7 @@ namespace ZenCodingVS
                 }
             }
 
-            return new Span();
+            return _emptySpan;
         }
 
         private ITextSelection UpdateTextBuffer(Span zenSpan, string result)
@@ -194,14 +195,17 @@ namespace ZenCodingVS
             text = string.Empty;
 
             if (position == 0)
-                return new Span();
+                return _emptySpan;
 
             var line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
             var last = _classifier.GetClassificationSpans(line.Extent).LastOrDefault();
             var start = last?.Span.End ?? line.Start;
 
+            if (start > position)
+                return _emptySpan;
+
             text = line.Snapshot.GetText(start, position - start).Trim();
-            var offset = position - line.Start - text.Length;
+            var offset = position - start - text.Length;
 
             return Span.FromBounds(start + offset, position);
         }
