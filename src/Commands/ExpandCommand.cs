@@ -1,4 +1,7 @@
-﻿using EnvDTE;
+﻿using System;
+using System.Linq;
+using System.Text.RegularExpressions;
+using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -8,39 +11,39 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Projection;
-using System;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Windows.Threading;
 using ZenCoding;
 
 namespace ZenCodingVS
 {
     internal class ExpandCommand : BaseCommand
     {
-        private static Regex _bracket = new Regex(@"<([a-z0-9]*)\b[^>]*>([^<]*)</\1>", RegexOptions.IgnoreCase);
-        private static Regex _quotes = new Regex("(=\"()\")", RegexOptions.IgnoreCase);
+        private static readonly Regex _bracket = new Regex(@"<([a-z0-9]*)\b[^>]*>([^<]*)</\1>", RegexOptions.IgnoreCase);
+        private static readonly Regex _quotes = new Regex("(=\"()\")", RegexOptions.IgnoreCase);
 
         private ICompletionBroker _broker;
         private IWpfTextView _view;
         private ITextBufferUndoManager _undoManager;
         private IClassifier _classifier;
         private static Span _emptySpan = new Span();
+        private readonly DTE _dte;
 
         public ExpandCommand(IWpfTextView view, ICompletionBroker broker, ITextBufferUndoManagerProvider undoProvider, IClassifier classifier)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _view = view;
             _broker = broker;
             _undoManager = undoProvider.GetTextBufferUndoManager(view.TextBuffer);
             _classifier = classifier;
+            _dte = Package.GetGlobalService(typeof(DTE)) as DTE;
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (pguidCmdGroup == VSConstants.VSStd2K && nCmdID == (uint)VSConstants.VSStd2KCmdID.TAB && !_broker.IsCompletionActive(_view))
             {
-                var dte = (DTE)Package.GetGlobalService(typeof(DTE));
-                if (InvokeZenCoding(dte))
+                if (InvokeZenCoding())
                 {
                     return VSConstants.S_OK;
                 }
@@ -49,8 +52,10 @@ namespace ZenCodingVS
             return Next.Exec(pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
-        private bool InvokeZenCoding(DTE dte)
+        private bool InvokeZenCoding()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             Span zenSpan = GetSyntaxSpan(out string syntax);
 
             if (zenSpan.IsEmpty || _view.Selection.SelectedSpans[0].Length > 0 || !IsValidTextBuffer())
@@ -61,21 +66,18 @@ namespace ZenCodingVS
 
             if (!string.IsNullOrEmpty(result))
             {
-                Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+                using (ITextUndoTransaction undo = _undoManager.TextBufferUndoHistory.CreateTransaction("ZenCoding"))
                 {
-                    using (var undo = _undoManager.TextBufferUndoHistory.CreateTransaction("ZenCoding"))
-                    {
-                        ITextSelection selection = UpdateTextBuffer(zenSpan, result);
+                    ITextSelection selection = UpdateTextBuffer(zenSpan, result);
 
-                        Span newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
+                    var newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
 
-                        dte.ExecuteCommand("Edit.FormatSelection");
-                        SetCaret(newSpan, false);
+                    _dte.ExecuteCommand("Edit.FormatSelection");
+                    SetCaret(newSpan, false);
 
-                        selection.Clear();
-                        undo.Complete();
-                    }
-                }), DispatcherPriority.ApplicationIdle, null);
+                    selection.Clear();
+                    undo.Complete();
+                }
 
                 return true;
             }
@@ -87,9 +89,9 @@ namespace ZenCodingVS
         {
             if (_view.TextBuffer is IProjectionBuffer projection)
             {
-                var snapshotPoint = _view.Caret.Position.BufferPosition;
+                SnapshotPoint snapshotPoint = _view.Caret.Position.BufferPosition;
 
-                var buffers = projection.SourceBuffers.Where(
+                System.Collections.Generic.IEnumerable<ITextBuffer> buffers = projection.SourceBuffers.Where(
                     s =>
                         !s.ContentType.IsOfType("html")
                         && !s.ContentType.IsOfType("htmlx")
@@ -182,8 +184,8 @@ namespace ZenCodingVS
         {
             _view.TextBuffer.Replace(zenSpan, result);
 
-            SnapshotPoint point = new SnapshotPoint(_view.TextBuffer.CurrentSnapshot, zenSpan.Start);
-            SnapshotSpan snapshot = new SnapshotSpan(point, result.Length);
+            var point = new SnapshotPoint(_view.TextBuffer.CurrentSnapshot, zenSpan.Start);
+            var snapshot = new SnapshotSpan(point, result.Length);
             _view.Selection.Select(snapshot, false);
 
             return _view.Selection;
@@ -197,21 +199,23 @@ namespace ZenCodingVS
             if (position == 0)
                 return _emptySpan;
 
-            var line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
-            var last = _classifier.GetClassificationSpans(line.Extent).LastOrDefault();
-            var start = last?.Span.End ?? line.Start;
+            ITextSnapshotLine line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
+            ClassificationSpan last = _classifier.GetClassificationSpans(line.Extent).LastOrDefault();
+            SnapshotPoint start = last?.Span.End ?? line.Start;
 
             if (start > position)
                 return _emptySpan;
 
             text = line.Snapshot.GetText(start, position - start).Trim();
-            var offset = position - start - text.Length;
+            int offset = position - start - text.Length;
 
             return Span.FromBounds(start + offset, position);
         }
 
         public override int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (pguidCmdGroup == VSConstants.VSStd2K && prgCmds[0].cmdID == (uint)VSConstants.VSStd2KCmdID.FORMATDOCUMENT)
             {
                 prgCmds[0].cmdf = (uint)OLECMDF.OLECMDF_ENABLED | (uint)OLECMDF.OLECMDF_SUPPORTED;

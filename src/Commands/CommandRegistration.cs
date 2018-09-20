@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.Editor;
+﻿using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
-using System.ComponentModel.Composition;
 
 namespace ZenCodingVS
 {
@@ -29,15 +29,15 @@ namespace ZenCodingVS
 
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
-            var textView = EditorAdaptersFactoryService.GetWpfTextView(textViewAdapter);
-            var classifier = ClassifierService.GetClassifier(textView.TextBuffer);
+            IWpfTextView textView = EditorAdaptersFactoryService.GetWpfTextView(textViewAdapter);
+            IClassifier classifier = ClassifierService.GetClassifier(textView.TextBuffer);
 
             AddCommandFilter(textViewAdapter, new ExpandCommand(textView, CompletionBroker, UndoProvider, classifier));
         }
 
         private void AddCommandFilter(IVsTextView textViewAdapter, BaseCommand command)
         {
-            textViewAdapter.AddCommandFilter(command, out var next);
+            textViewAdapter.AddCommandFilter(command, out Microsoft.VisualStudio.OLE.Interop.IOleCommandTarget next);
             command.Next = next;
         }
     }
