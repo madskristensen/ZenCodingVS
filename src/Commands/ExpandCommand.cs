@@ -1,11 +1,14 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
-using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
@@ -20,12 +23,11 @@ namespace ZenCodingVS
         private static readonly Regex _bracket = new Regex(@"<([a-z0-9]*)\b[^>]*>([^<]*)</\1>", RegexOptions.IgnoreCase);
         private static readonly Regex _quotes = new Regex("(=\"()\")", RegexOptions.IgnoreCase);
 
-        private ICompletionBroker _broker;
-        private IWpfTextView _view;
-        private ITextBufferUndoManager _undoManager;
-        private IClassifier _classifier;
+        private readonly ICompletionBroker _broker;
+        private readonly IWpfTextView _view;
+        private readonly ITextBufferUndoManager _undoManager;
+        private readonly IClassifier _classifier;
         private static Span _emptySpan = new Span();
-        private readonly DTE _dte;
 
         public ExpandCommand(IWpfTextView view, ICompletionBroker broker, ITextBufferUndoManagerProvider undoProvider, IClassifier classifier)
         {
@@ -34,7 +36,6 @@ namespace ZenCodingVS
             _broker = broker;
             _undoManager = undoProvider.GetTextBufferUndoManager(view.TextBuffer);
             _classifier = classifier;
-            _dte = Package.GetGlobalService(typeof(DTE)) as DTE;
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -56,13 +57,15 @@ namespace ZenCodingVS
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Span zenSpan = GetSyntaxSpan(out string syntax);
+            Span zenSpan = GetSyntaxSpan(out var syntax);
 
             if (zenSpan.IsEmpty || _view.Selection.SelectedSpans[0].Length > 0 || !IsValidTextBuffer())
+            {
                 return false;
+            }
 
             var parser = new Parser();
-            string result = parser.Parse(syntax, ZenType.HTML);
+            var result = parser.Parse(syntax, ZenType.HTML);
 
             if (!string.IsNullOrEmpty(result))
             {
@@ -72,7 +75,8 @@ namespace ZenCodingVS
 
                     var newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
 
-                    _dte.ExecuteCommand("Edit.FormatSelection");
+                    var cmd = new CommandID(new Guid("{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}"), 0x70);
+                    cmd.Execute();
                     SetCaret(newSpan, false);
 
                     selection.Clear();
@@ -118,7 +122,7 @@ namespace ZenCodingVS
 
         private bool SetCaret(Span zenSpan, bool isReverse)
         {
-            string text = _view.TextBuffer.CurrentSnapshot.GetText();
+            var text = _view.TextBuffer.CurrentSnapshot.GetText();
             Span quote = FindTabSpan(zenSpan, isReverse, text, _quotes);
             Span bracket = FindTabSpan(zenSpan, isReverse, text, _bracket);
 
@@ -166,7 +170,7 @@ namespace ZenCodingVS
             }
             else
             {
-                for (int i = matches.Count - 1; i >= 0; i--)
+                for (var i = matches.Count - 1; i >= 0; i--)
                 {
                     Group group = matches[i].Groups[2];
 
@@ -193,21 +197,25 @@ namespace ZenCodingVS
 
         private Span GetSyntaxSpan(out string text)
         {
-            int position = _view.Caret.Position.BufferPosition.Position;
+            var position = _view.Caret.Position.BufferPosition.Position;
             text = string.Empty;
 
             if (position == 0)
+            {
                 return _emptySpan;
+            }
 
             ITextSnapshotLine line = _view.TextBuffer.CurrentSnapshot.GetLineFromPosition(position);
             ClassificationSpan last = _classifier.GetClassificationSpans(line.Extent).LastOrDefault();
             SnapshotPoint start = last?.Span.End ?? line.Start;
 
             if (start > position)
+            {
                 return _emptySpan;
+            }
 
             text = line.Snapshot.GetText(start, position - start).Trim();
-            int offset = position - start - text.Length;
+            var offset = position - start - text.Length;
 
             return Span.FromBounds(start + offset, position);
         }
@@ -223,6 +231,34 @@ namespace ZenCodingVS
             }
 
             return Next.QueryStatus(pguidCmdGroup, cCmds, prgCmds, pCmdText);
+        }
+    }
+
+    public static class CommandExtensions
+    {
+        /// <summary>
+        /// Executes the command.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if the command was succesfully executed; otherwise <see langword="false"/>.</returns>
+        public static bool Execute(this CommandID cmd, string argument = "")
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var cs = Package.GetGlobalService(typeof(SUIHostCommandDispatcher)) as IOleCommandTarget;
+
+            var argByteCount = Encoding.Unicode.GetByteCount(argument);
+            IntPtr inArgPtr = Marshal.AllocCoTaskMem(argByteCount);
+
+            try
+            {
+                Marshal.GetNativeVariantForObject(argument, inArgPtr);
+                var result = cs.Exec(cmd.Guid, (uint)cmd.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, inArgPtr, IntPtr.Zero);
+
+                return result == VSConstants.S_OK;
+            }
+            finally
+            {
+                Marshal.Release(inArgPtr);
+            }
         }
     }
 }
