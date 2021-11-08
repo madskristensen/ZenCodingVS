@@ -12,6 +12,7 @@ namespace ZenCodingVS
     [Export(typeof(IVsTextViewCreationListener))]
     [ContentType("HTML")]
     [ContentType("HTMLX")]
+    [ContentType("Razors")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class CommandRegistration : IVsTextViewCreationListener
     {

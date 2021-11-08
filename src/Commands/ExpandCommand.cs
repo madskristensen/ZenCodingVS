@@ -46,7 +46,7 @@ namespace ZenCodingVS
             {
                 if (InvokeZenCoding())
                 {
-                    return VSConstants.S_OK;
+                    return (int)OLECMDF.OLECMDF_SUPPORTED;
                 }
             }
 
@@ -71,15 +71,22 @@ namespace ZenCodingVS
             {
                 using (ITextUndoTransaction undo = _undoManager.TextBufferUndoHistory.CreateTransaction("ZenCoding"))
                 {
-                    ITextSelection selection = UpdateTextBuffer(zenSpan, result);
+                    try
+                    {
+                        ITextSelection selection = UpdateTextBuffer(zenSpan, result);
 
-                    var newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
+                        var newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
 
-                    var cmd = new CommandID(new Guid("{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}"), 0x70);
-                    cmd.Execute();
-                    SetCaret(newSpan, false);
+                        var cmd = new CommandID(new Guid("{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}"), 0x70);
+                        cmd.Execute();
+                        SetCaret(newSpan, false);
 
-                    selection.Clear();
+                        selection.Clear();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.Write(ex);
+                    }
                     undo.Complete();
                 }
 
