@@ -18,9 +18,11 @@ namespace ZenCodingVS
     [Export(typeof(ICommandHandler))]
     [Name(nameof(Expander))]
     [ContentType("HTML")]
+    [ContentType("html-delegation")] // VS 2022
+    [ContentType("WebForms")] // VS 2022
     [ContentType("HTMLX")]
     [ContentType("Razor")]
-    [ContentType("LegacyRazorCSharp")]
+    [ContentType("LegacyRazorCSharp")] // VS 2022
     [TextViewRole(PredefinedTextViewRoles.PrimaryDocument)]
     internal class Expander : ICommandHandler<TabKeyCommandArgs>
     {
