@@ -46,7 +46,7 @@ namespace ZenCodingVS
             {
                 if (InvokeZenCoding())
                 {
-                    return (int)OLECMDF.OLECMDF_SUPPORTED;
+                    return VSConstants.S_OK;
                 }
             }
 
@@ -108,6 +108,8 @@ namespace ZenCodingVS
                         && !s.ContentType.IsOfType("htmlx")
                         && !s.ContentType.IsOfType("inert")
                         && !s.ContentType.IsOfType("CSharp")
+                        && !s.ContentType.IsOfType("Razor")
+                        && !s.ContentType.IsOfType("LegacyRazorCSharp")
                         && !s.ContentType.IsOfType("VisualBasic")
                         && !s.ContentType.IsOfType("RoslynCSharp")
                         && !s.ContentType.IsOfType("RoslynVisualBasic"));

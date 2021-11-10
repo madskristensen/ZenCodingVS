@@ -9,10 +9,11 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace ZenCodingVS
 {
-    [Export(typeof(IVsTextViewCreationListener))]
+    //[Export(typeof(IVsTextViewCreationListener))]
     [ContentType("HTML")]
     [ContentType("HTMLX")]
-    [ContentType("Razors")]
+    [ContentType("Razor")]
+    [ContentType("LegacyRazorCSharp")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class CommandRegistration : IVsTextViewCreationListener
     {
