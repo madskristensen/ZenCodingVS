@@ -1,15 +1,19 @@
 ﻿using System;
 using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Commanding;
+using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Text.Editor.Commanding;
 using Microsoft.VisualStudio.Text.Editor.Commanding.Commands;
-using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using ZenCoding;
 
@@ -30,15 +34,26 @@ namespace ZenCodingVS
         private static readonly Regex _quotes = new Regex("(=\"()\")", RegexOptions.IgnoreCase);
 
         [Import]
-        private readonly IEditorCommandHandlerServiceFactory _commandService = default;
-
-        [Import]
         private readonly IClassifierAggregatorService _classifierService = default;
 
-        [Import]
-        private readonly ITextBufferUndoManagerProvider _undoProvider = default;
-
         private static Span _emptySpan = new Span();
+
+        public bool ExecuteCommand(TabKeyCommandArgs args, CommandExecutionContext executionContext)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (InvokeZenCoding(args.TextView))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public CommandState GetCommandState(TabKeyCommandArgs args)
+        {
+            return CommandState.Available;
+        }
 
         private bool InvokeZenCoding(ITextView view)
         {
@@ -56,36 +71,24 @@ namespace ZenCodingVS
 
             if (!string.IsNullOrEmpty(result))
             {
-                ITextBufferUndoManager undoManager = _undoProvider.GetTextBufferUndoManager(view.TextBuffer);
-
-                using (ITextUndoTransaction undo = undoManager.TextBufferUndoHistory.CreateTransaction("ZenCoding"))
+                try
                 {
-                    try
-                    {
-                        ITextSelection selection = UpdateTextBuffer(view, zenSpan, result);
+                    ITextSelection selection = UpdateTextBuffer(view, zenSpan, result);
 
-                        var newSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
+                    var formatRangeCmd = new CommandID(new Guid("{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}"), 0x70);
+                    formatRangeCmd.Execute();
 
-                        IEditorCommandHandlerService service = _commandService.GetService(view);
+                    var formattedSpan = new Span(zenSpan.Start, selection.SelectedSpans[0].Length);
+                    SetCaret(view, formattedSpan, false);
 
-                        var cmd = new FormatSelectionCommandArgs(view, view.TextBuffer);
-                        service.Execute((v, b) => cmd, null);
+                    selection.Clear();
 
-                        SetCaret(view, newSpan, false);
-
-                        selection.Clear();
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.Write(ex);
-                    }
-                    finally
-                    {
-                        undo.Complete();
-                    }
+                    return true;
                 }
-
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Write(ex);
+                }
             }
 
             return false;
@@ -192,22 +195,33 @@ namespace ZenCodingVS
 
             return Span.FromBounds(start + offset, position);
         }
+    }
 
-        public string DisplayName => Vsix.Name;
-
-        public bool ExecuteCommand(TabKeyCommandArgs args, CommandExecutionContext executionContext)
+    public static class CommandExtensions
+    {
+        /// <summary>
+        /// Executes the command.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if the command was succesfully executed; otherwise <see langword="false"/>.</returns>
+        public static bool Execute(this CommandID cmd, string argument = "")
         {
-            if (InvokeZenCoding(args.TextView))
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var cs = Package.GetGlobalService(typeof(SUIHostCommandDispatcher)) as IOleCommandTarget;
+
+            var argByteCount = Encoding.Unicode.GetByteCount(argument);
+            IntPtr inArgPtr = Marshal.AllocCoTaskMem(argByteCount);
+
+            try
             {
-                return true;
+                Marshal.GetNativeVariantForObject(argument, inArgPtr);
+                var result = cs.Exec(cmd.Guid, (uint)cmd.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, inArgPtr, IntPtr.Zero);
+
+                return result == VSConstants.S_OK;
             }
-
-            return false;
-        }
-
-        public CommandState GetCommandState(TabKeyCommandArgs args)
-        {
-            return CommandState.Available;
+            finally
+            {
+                Marshal.Release(inArgPtr);
+            }
         }
     }
 }
